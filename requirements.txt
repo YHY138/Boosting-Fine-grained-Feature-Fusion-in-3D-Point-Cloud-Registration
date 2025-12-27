@@ -11,5 +11,6 @@ vtk==9.0.3
 rospkg
 opencv-python
 rich
+evo
 
 # Also install pytorch, pytorch3d, and Minkowski Engine

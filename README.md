@@ -1,10 +1,9 @@
 # Boosting Fine-grained Feature Fusion in 3D Point Cloud Registration
-### Manuscript ID: IEEE LATAM Submission ID: 10157 
+Source code for the paper: Boosting Fine-grained Feature Fusion in 3D Point Cloud Registration. Manuscript ID: IEEE LATAM Submission ID: 10157 
 
-Source code for the paper: Boosting Fine-grained Feature Fusion in 3D Point Cloud Registration.
 ---
 
-###  Project Structure
+##  Project Structure
 ├── backbone/ # Backbone network implementation  
 ├── conf/ #  Training configuration  
 ├── cvhelpers/ #  Visulization tool  
@@ -21,12 +20,15 @@ Source code for the paper: Boosting Fine-grained Feature Fusion in 3D Point Clou
 ├── test.py #  Registration Recall calculation
 ├── train.py # Training script   
 ├── trainer.py #  Trainer and optimizer
+
 ---
 
 ## Datasets
 - [3DMatch](https://share.phys.ethz.ch/~gseg/Predator/data.zip)
 - [ModelNet40](https://shapenet.cs.stanford.edu/media/modelnet40_ply_hdf5_2048.zip)
 - [MCD](https://mcdviral.github.io/)
+
+---
 
 ## Requirement
 - Python 3.9
@@ -35,28 +37,37 @@ Source code for the paper: Boosting Fine-grained Feature Fusion in 3D Point Clou
 - MinkowskiEngine 0.5.4
 - PyTorch3D 0.7.5
 
+```bash
+pip install -r requirements.txt  
+```
+---
 
-### Training
+## Training
 ```bash
 python train.py --config conf/dataset_name.yaml
 ```
 
 ---
 
-### Validation for Registration Recall
+## Validation for Registration Recall
 ```bash
 bash ./rr_loop.sh
 ```
+
 ---
 
-### Validation for RMSE
+## Validation for RMSE
 ```bash
 python save_result_demo.py 
 python evo/convert_evo.py
+# then use evo_ape for RMSE evaluation. evo tutorial https://github.com/MichaelGrupp/evo
 ```
+
 ---
 
-### Save Colored Point Clouds
+## Save Colored Point Clouds
 ```bash
 python save_colorP3D.py
 ```
+
+---
