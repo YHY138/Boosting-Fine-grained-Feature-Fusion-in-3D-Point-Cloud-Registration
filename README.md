@@ -8,15 +8,16 @@ Source code for the paper: Boosting Fine-grained Feature Fusion in 3D Point Clou
 ├── conf/ #  Training configuration  
 ├── cvhelpers/ #  Visulization tool  
 ├── data_loaders/ #   Data load tool
-├── evo/ #   Evaluating RMSE
 ├── data_processing/ # 3DMatch and MCD Dataset Processing   
 ├── datasets/ # 3DMatch and ModelNet Metadata   
+├── evo/ #   Evaluating RMSE
 ├── kernels/   Kernels dispositions
-├── model/ # Model architecture  
+├── models/ # Model architecture  
 ├── utils # Variable processing tool  
 ├── README.md # Project documentation 
 ├── requirements.txt # Dependency list  
-├── rr_loop.sh # Validation script for Registration Recall   
+├── rr_test.sh # Validation script for Registration Recall   
+├── save_colorP3D.py # PCA transforms the features into RGB color.
 ├── save_result_demo.py # Saving registration results  
 ├── test.py #  Registration Recall calculation
 ├── train.py # Training script   
@@ -50,18 +51,16 @@ python train.py --config conf/dataset_name.yaml
 
 ---
 
-## Validation for Registration Recall
+## Validation
 ```bash
-bash ./rr_loop.sh
+bash ./rr_test.sh
 ```
 
 ---
 
-## Validation for RMSE
+## Inference
 ```bash
-python save_result_demo.py 
-python evo/convert_evo.py
-# then use evo_ape for RMSE evaluation. evo tutorial https://github.com/MichaelGrupp/evo
+python save_result_demo.py
 ```
 
 ---

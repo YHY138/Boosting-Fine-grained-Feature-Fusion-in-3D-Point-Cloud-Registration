@@ -120,7 +120,7 @@ def main():
         '7-scenes-redkitchen',
     ]
 
-    ckpt_path = "/home/dell/anaconda3/envs/yhy/RegTR-main/trained_models/3dmatch/ori_regtr_40epoch/ckpt/model-411720.pth" 
+    ckpt_path = "/path/to/your/pretrained_model.pth" 
     
     # Load configuration file
     cfg = EasyDict(load_config(Path(ckpt_path).parents[1] / 'config.yaml'))
@@ -148,7 +148,7 @@ def main():
     color_path = './color_pointcloud'
 
     for dataset_name in dataset_name_list:
-        redkichen_date_path = os.path.join('/home/dell/anaconda3/envs/yhy/RegTR-main/data/data/indoor/test', dataset_name)
+        redkichen_date_path = os.path.join('/path/to/3dmatch/indoor/test', dataset_name)
         file_gt = open(os.path.join(redkichen_date_path, gtlog_path), encoding="utf-8")
         gts = file_gt.readlines()
 
@@ -161,13 +161,11 @@ def main():
         for i in range(0, len(gts), 5):
             # objgraph.show_most_common_types(limit=20)
             corr_ids = gts[i].split()
-            print("############ corre ids ", corr_ids)
             cloud1 = cloud_name_pre + corr_ids[0] + cloud_name_end
             cloud2 = cloud_name_pre + corr_ids[1] + cloud_name_end
             src_xyz = load_point_cloud(os.path.join(redkichen_date_path,cloud1))
             tgt_xyz = load_point_cloud(os.path.join(redkichen_date_path,cloud2))
 
-            # 是否要给点云进行去畸变？？？
             if 'crop_radius' in cfg:
                 # Crops the point cloud if necessary (set in the config file)
                 crop_radius = cfg['crop_radius']
