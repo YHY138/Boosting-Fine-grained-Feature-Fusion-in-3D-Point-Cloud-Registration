@@ -7,11 +7,11 @@ Source code for the paper: Boosting Fine-grained Feature Fusion in 3D Point Clou
 ├── backbone/ # Backbone network implementation  
 ├── conf/ #  Training configuration  
 ├── cvhelpers/ #  Visulization tool  
-├── data_loaders/ #   Data load tool
+├── data_loaders/ #  Data load tool
 ├── data_processing/ # 3DMatch and MCD Dataset Processing   
 ├── datasets/ # 3DMatch and ModelNet Metadata   
 ├── evo/ #   Evaluating RMSE
-├── kernels/   Kernels dispositions
+├── kernels/ #  Kernels dispositions
 ├── models/ # Model architecture  
 ├── utils # Variable processing tool  
 ├── README.md # Project documentation 
