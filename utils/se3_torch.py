@@ -79,10 +79,6 @@ def se3_transform_list(pose: Union[List[Tensor], Tensor], xyz: List[Tensor]):
     """
 
     B = len(xyz)
-    # print("##############", B)
-    # for b in range(B):
-    #     print(xyz[b].shape)
-    #     print(pose[b].shape)
     assert all([xyz[b].shape[-1] == 3 and pose[b].shape[:-2] == xyz[b].shape[:-2] for b in range(B)])
 
     transformed_all = []
@@ -95,7 +91,7 @@ def se3_transform_list(pose: Union[List[Tensor], Tensor], xyz: List[Tensor]):
 
 
 def inv_se3_transform_list(pose: Union[List[Tensor], Tensor], xyz: List[Tensor]):
-    """Similar to se3_transform, but processes lists of tensors instead.但这里需要对pose进行求逆，xyz要和这个求逆的结果相对应
+    """Similar to se3_transform, but processes lists of tensors instead.
 
     Args:
         pose: List of (3, 4)
@@ -110,10 +106,8 @@ def inv_se3_transform_list(pose: Union[List[Tensor], Tensor], xyz: List[Tensor])
 
     transformed_all = []
     for b in range(B):
-        # 位姿求逆
         rot = pose[b][..., :3, :3].T
         trans = -torch.matmul(rot, pose[b][..., :3, 3:4])
-        # rot, trans = pose[b][..., :3, :3], pose[b][..., :3, 3:4]
         transformed = torch.einsum('...ij,...bj->...bi', rot, xyz[b]) + trans.transpose(-1, -2)  # Rx + t
         transformed_all.append(transformed)
 
@@ -134,7 +128,6 @@ def se3_compare(a, b):
     }
     return err
 
-# 利用匹配点（网络预测出来的）以及这些匹配点在重叠区域内的概率值来进行位姿估计。
 def compute_rigid_transform(a: torch.Tensor, b: torch.Tensor, weights: torch.Tensor = None):
     """Compute rigid transforms between two point sets
 
@@ -149,18 +142,6 @@ def compute_rigid_transform(a: torch.Tensor, b: torch.Tensor, weights: torch.Ten
 
     assert a.shape == b.shape
     assert a.shape[-1] == 3
-
-    # print("############# src points shape ", a.shape) # [x, pointnum, 3]
-    # print("############# tgt points shape ", b.shape)# [x, pointnum, 3]
-    # print("############# weights shape ", weights.shape)# [x, pointnum]
-    # 其中x表示transformer的层数，即有6层transformer
-
-    # zero = torch.zeros(weights[-1].size()).to(device='cuda')
-    # one = torch.zeros(weights[-1].size()).to(device='cuda')
-    # for i in range(weights.shape[0]):
-    #     weights[i] = torch.where(weights[i] > 0.8, weights[i], zero)
-    # print(weights[-1])
-
     if weights is not None:
         assert a.shape[:-1] == weights.shape
         assert weights.min() >= 0 and weights.max() <= 1
@@ -179,9 +160,6 @@ def compute_rigid_transform(a: torch.Tensor, b: torch.Tensor, weights: torch.Ten
         b_centered = b - centroid_b[..., None, :]
         cov = a_centered.transpose(-2, -1) @ b_centered
 
-    # Compute rotation using Kabsch algorithm. Will compute two copies with +/-V[:,:3]
-    # and choose based on determinant to avoid flips
-    # print("################## cov shape is",cov.shape) [layernum_of_tranformer, 3,3]
     u, s, v = torch.svd(cov, some=False, compute_uv=True)
     rot_mat_pos = v @ u.transpose(-1, -2)
     v_neg = v.clone()
@@ -191,9 +169,7 @@ def compute_rigid_transform(a: torch.Tensor, b: torch.Tensor, weights: torch.Ten
 
     # Compute translation (uncenter centroid)
     translation = -rot_mat @ centroid_a[..., :, None] + centroid_b[..., :, None]
-    # print(translation.shape)
     transform = torch.cat((rot_mat, translation), dim=-1) # [6, 3, 4]
-    # print("########### transform result shape",transform.shape)
     return transform
 
 def sinkhorn(log_alpha, n_iters=5, slack=True):
@@ -242,15 +218,12 @@ def compute_rigid_transform_with_sinkhorn(xyz_s, xyz_t, affinity, slack, n_iters
     weighted_t = perm_matrix @ xyz_t / (torch.sum(perm_matrix, dim=2, keepdim=True) + _EPS)
 
     # Compute transform and transform points
-    # print("##############", xyz_s.shape, weighted_t.shape) # weighted_t shape is (6, N, 3)
-    # print("################", xyz_s.shape, weighted_t[-1].unsqueeze(0).shape)
-    # print(torch.sum(perm_matrix, dim=2).shape)
     transform = compute_rigid_transform(xyz_s.expand(weighted_t.shape[0], -1, -1), weighted_t, weights=torch.sum(perm_matrix, dim=2)).squeeze(0)
 
     return transform
 
 
-def fast_compute_rigid_transform(a: torch.Tensor, b: torch.Tensor, weights: torch.Tensor = None, weights_threshold=0.6):
+def fast_compute_rigid_transform(a: torch.Tensor, b: torch.Tensor, weights: torch.Tensor = None, weights_threshold=0.85):
     """Compute rigid transforms between two point sets
 
     Args:
@@ -263,8 +236,6 @@ def fast_compute_rigid_transform(a: torch.Tensor, b: torch.Tensor, weights: torc
     """
     assert a.shape == b.shape
     assert a.shape[-1] == 3
-    # weights_threshold = 0.6
-    print("########################### 当前使用的阈值参数：", weights_threshold)
 
     zero = torch.zeros(weights[-1].size()).to(device='cuda')
     for i in range(weights.shape[0]):
@@ -290,7 +261,6 @@ def fast_compute_rigid_transform(a: torch.Tensor, b: torch.Tensor, weights: torc
 
     # Compute rotation using Kabsch algorithm. Will compute two copies with +/-V[:,:3]
     # and choose based on determinant to avoid flips
-    # print(cov.shape)
     u, s, v = torch.svd(cov, some=False, compute_uv=True)
     rot_mat_pos = v @ u.transpose(-1, -2)
     v_neg = v.clone()
@@ -300,8 +270,5 @@ def fast_compute_rigid_transform(a: torch.Tensor, b: torch.Tensor, weights: torc
 
     # Compute translation (uncenter centroid)
     translation = -rot_mat @ centroid_a[..., :, None] + centroid_b[..., :, None]
-    # print(translation.shape)
     transform = torch.cat((rot_mat, translation), dim=-1)
-    # print(transform.shape)
-    # print('))))))))))))) {}'.format(type(transform)))
     return transform

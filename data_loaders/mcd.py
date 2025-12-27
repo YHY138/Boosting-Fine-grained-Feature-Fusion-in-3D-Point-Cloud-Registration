@@ -1,5 +1,4 @@
-"""Dataloader for 3DMatch dataset
-
+"""Dataloader for MCD dataset
 Modified from Predator source code by Shengyu Huang:
   https://github.com/overlappredator/OverlapPredator/blob/main/datasets/indoor.py
 """
@@ -23,15 +22,8 @@ class MCDDataset(Dataset):
 
         assert phase in ['train', 'val', 'test']
         if phase in ['train', 'val']:
-            # info_fname = f'/home/ubuntu/anaconda3/envs/regtr/MCD_dataset/TUHH_dataset/{phase}_info.pkl'
-            # info_fname = f'/home/ubuntu/anaconda3/envs/regtr/MCD_dataset/TUHH_dataset/tuhh_night_09_os1_64-001_mini.pkl'
-            info_fname = f'/home/dell/anaconda3/envs/yhy/MCD_datasets/TUHH/ntu_night_08_exported_pcds_forTrain/ntu_night_08_mergeMiniGap_{phase}.pkl'
+            info_fname = f'{cfg.root}/tuhh_night_09_mergeMiniGap_{phase}.pkl'
             pairs_fname = f'{phase}_pairs-overlapmask.h5'
-        else:
-            # info_fname = f'/home/dell/anaconda3/envs/yhy/MCD_datasets/TUHH/{phase}_{cfg.benchmark}_info.pkl'
-            # pairs_fname = f'{phase}_{cfg.benchmark}_pairs-overlapmask.h5'
-            info_fname = f'/home/dell/anaconda3/envs/yhy/MCD_datasets/kth_night_04_exported_pcds_forTest/kth_day_04_mergeMiniGap_wGapSampleLarge_test.pkl'
-            pairs_fname = f'{phase}_{cfg.benchmark}_pairs-overlapmask.h5'
 
         with open(info_fname, 'rb') as fid:
             self.infos = pickle.load(fid)
@@ -76,7 +68,7 @@ class MCDDataset(Dataset):
         tgt_path = self.infos['tgt'][item]
         src_xyz = torch.load(os.path.join(self.base_dir, src_path))
         tgt_xyz = torch.load(os.path.join(self.base_dir, tgt_path))
-        overlap_p = self.infos['overlap'][item] # 要搞懂这个p是啥，但好像训练的时候这个p没有用
+        overlap_p = self.infos['overlap'][item] 
 
         # Get overlap region
         if self.pairs_data is None:

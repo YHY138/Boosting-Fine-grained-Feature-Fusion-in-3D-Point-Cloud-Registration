@@ -7,3 +7,6 @@ python combine_multiFrame.py # merge multiple pointcloud to enhance structure in
 
 python pcd_to_samplepth.py # sample pointcloud to avoid GPU out of memory during training
 
+Subsequently, the Create code is utilized to generate the metadata required for training.
+
+TODO: update the semantic data processing

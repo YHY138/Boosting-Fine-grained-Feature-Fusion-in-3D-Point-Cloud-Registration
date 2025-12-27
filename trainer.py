@@ -90,7 +90,6 @@ class Trainer:
 
         # Main training loop
         while not done:  # Loop over epochs
-
             self.logger.info('Starting epoch {} (steps {} - {})'.format(
                 epoch, global_step, global_step + len(train_loader)))
             tbar = tqdm(total=len(train_loader), ncols=80, smoothing=0)

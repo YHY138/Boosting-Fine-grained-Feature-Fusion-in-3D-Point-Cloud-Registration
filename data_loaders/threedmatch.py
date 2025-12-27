@@ -102,5 +102,4 @@ class ThreeDMatchDataset(Dataset):
 
         if self.transforms is not None:
             self.transforms(data_pair)  # Apply data augmentation
-        # print('##############################', src_path, tgt_path)
         return data_pair

@@ -3,7 +3,7 @@ general:
 
 dataset:
     dataset: mcd
-    root: '/home/dell/anaconda3/envs/yhy/MCD_datasets/TUHH/ntu_night_08_exported_pcds_forTrain'
+    root: '/path/to/MCD/dataset' 
     augment_noise: 0.005
     perturb_pose: small
     train_batch_size: 1

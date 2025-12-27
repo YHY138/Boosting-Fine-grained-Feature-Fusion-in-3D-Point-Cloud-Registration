@@ -10,6 +10,7 @@ Source code for the paper: Boosting Fine-grained Feature Fusion in 3D Point Clou
 ├── data_loaders/ #   Data load tool
 ├── evo/ #   Evaluating RMSE
 ├── data_processing/ # 3DMatch and MCD Dataset Processing   
+├── datasets/ # 3DMatch and ModelNet Metadata   
 ├── kernels/   Kernels dispositions
 ├── model/ # Model architecture  
 ├── utils # Variable processing tool  
@@ -65,7 +66,7 @@ python evo/convert_evo.py
 
 ---
 
-## Save Colored Point Clouds
+## Save Colored Features of Point Clouds
 ```bash
 python save_colorP3D.py
 ```

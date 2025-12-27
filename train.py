@@ -4,6 +4,8 @@ from easydict import EasyDict
 
 import sys
 sys.path.append('./')
+sys.path.append('./models')
+sys.path.append('./utils')
 from cvhelpers.misc import prepare_logger
 
 from data_loaders import get_dataloader

@@ -3,7 +3,7 @@ general:
 
 dataset:
     dataset: 3dmatch
-    root: '../data/data/indoor'
+    root: /path/to/indoor  # TODO: set the path to 3DMatch dataset
     augment_noise: 0.005
     perturb_pose: small
     train_batch_size: 2
@@ -76,7 +76,6 @@ model:
     corr_decoder_has_pos_emb: True
     direct_regress_coor: True  # Whether to regress coordinates using MLP (True) or a final attention layer (False)
 
-
 losses:
     # Overlap loss
     wt_overlap: 1.0
@@ -96,7 +95,6 @@ losses:
     # Correspondence loss
     wt_corr: 1.0
     corr_loss_on: [5]
-
 
 validation:
     # Registration success criteria. We use this to pick the best checkpoint

@@ -19,52 +19,12 @@ from utils.seq_manipulation import split_src_tgt, pad_sequence, unpad_sequences
 from utils.viz import visualize_registration
 _TIMEIT = False
 
-'''
-model = Linformer(
-        input_size=262144, # Dimension 1 of the input 数据个数，即有多少个点，类似这种
-        channels=64, # Dimension 2 of the input 特征的描述信息。每个特征点对应的描述向量维度，类似于feature map的通道数
-        dim_d=None, 直接用默认值就行# Overwrites the inner dim of the attention heads. If None, sticks with the recommended channels // nhead, as in the "Attention is all you need" paper
-        dim_k=128, # 主要是这里是原REGTR里没有的。 k值越小，计算复杂度和时间越小，但性能会有所降低
-        dim_ff=128, # Dimension in the feed forward network 这个应该和REGTR里面的d_feedforward变量
-        dropout_ff=0.15, # Dropout for feed forward network 这里也可以直接用REGTR里面的dropout参数
-        nhead=4, # Number of attention heads REGTR里面的nhead参数
-        depth=2, # How many times to run the model ？？？深度，对这个模型执行几次？直接使用默认值1吧
-        dropout=0.0, # How much dropout to apply to P_bar after softmax REGTR里面有这个参数
-    # 下面的一些参数可以直接使用默认的就好
-        activation="gelu", # What activation to use. Currently, only gelu and relu supported, and only on ff network.
-        checkpoint_level="C0", # What checkpoint level to use. For more information, see below.
-        parameter_sharing="layerwise", # What level of parameter sharing to use. For more information, see below.
-        k_reduce_by_layer=0, # Going down `depth`, how much to reduce `dim_k` by, for the `E` and `F` matrices. Will have a minimum value of 1.
-        full_attention=False, # Use full attention instead, for O(n^2) time and space complexity. Included here just for comparison
-        include_ff=True, # Whether or not to include the Feed Forward layer
-        w_o_intermediate_dim=None, # If not None, have 2 w_o matrices, such that instead of `dim*nead,channels`, you have `dim*nhead,w_o_int`, and `w_o_int,channels`
-        ).cuda()
-        
-model = MHAttention(
-        input_size=512, # Dimension 1 of the input
-        channels=64, # Dimension 2 of the input
-        dim=8, # Dim of each attn head
-        dim_k=128, # What to sample the input length down to
-        nhead=8, # Number of heads
-        dropout=0, # Dropout for each of the heads
-        activation="gelu", # Activation after attention has been concat'd
-        checkpoint_level="C2", # If C2, checkpoint each of the heads
-        parameter_sharing="layerwise", # What level of parameter sharing to do
-        E_proj, F_proj, # The E and F projection matrices
-        full_attention=False, # Use full attention instead
-        w_o_intermediate_dim=None, # If not None, have 2 w_o matrices, such that instead of `dim*nead,channels`, you have `dim*nhead,w_o_int`, and `w_o_int,channels`
-        )
-        
-E_proj = get_EF(input_size, dim_k, method, head_dim) # 通过这个函数来获得简单的E和F投射矩阵
-'''
-
 
 class RegTR(GenericRegModel):
 
     def __init__(self, cfg, *args, **kwargs):
         super().__init__(cfg, *args, **kwargs)
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!Using MY RegTR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(cfg.dataset)
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!Using Fine-grained RegTR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
         #######################
         # Preprocessor
@@ -74,11 +34,9 @@ class RegTR(GenericRegModel):
         #######################
         # KPConv Encoder/decoder
         #######################
-        # print('#################### create KPConv')
         self.kpf_encoder = KPFEncoder(cfg, cfg.d_embed)
         # Bottleneck layer to shrink KPConv features to a smaller dimension for running attention
         self.feat_proj = nn.Linear(self.kpf_encoder.encoder_skip_dims[-1], cfg.d_embed, bias=True) # feat_proj层
-        # print("#################### finish KPConv")
 
         #######################
         # Embeddings
@@ -89,13 +47,8 @@ class RegTR(GenericRegModel):
                                                          scale=cfg.get('pos_emb_scaling', 1.0))
         elif cfg['pos_emb_type'] == 'learned':
             self.pos_embed = PositionEmbeddingLearned(3, cfg.d_embed)
-        elif cfg['pos_emb_type'] == 'GeoSin':
-            print("!!!!!!!!!! 使用GeoSin位置编码")
-            self.pos_embed = GeometricStructureEmbedding(cfg.d_embed)
-            self.Geoembeding = True
         else:
             raise NotImplementedError
-        # print('#################### finish poseembedding')
 
         #######################
         # Attention propagation
@@ -112,7 +65,6 @@ class RegTR(GenericRegModel):
         self.transformer_encoder = TransformerCrossEncoder(
             encoder_layer, cfg.num_encoder_layers, encoder_norm,
             return_intermediate=True)
-        # print('#################### finish transencoder')
 
         #######################
         # Output layers
@@ -123,7 +75,6 @@ class RegTR(GenericRegModel):
             self.correspondence_decoder = CorrespondenceDecoder(cfg.d_embed,
                                                                 cfg.corr_decoder_has_pos_emb,
                                                                 self.pos_embed)
-        # print('#################### finish regress corr')
 
         #######################
         # Losses
@@ -167,19 +118,12 @@ class RegTR(GenericRegModel):
             t_start_pp_cuda.record()
 
         # Preprocess
-        # print('@@@@@@@@@@@@@@@@@@@@@@@@@@  Current src and tgt point  @@@@@@@@@@@@@@@@@@@@@@@@@@')
-        # print(batch['src_xyz'][0].shape, batch['src_xyz'][1].shape, batch['tgt_xyz'][0].shape, batch['tgt_xyz'][1].shape)
-
-        # 这里的preprocesser将输入的src和tgt点云做了一次处理，使得点的总数 变了？？
-        kpconv_meta = self.preprocessor(batch['src_xyz'] + batch['tgt_xyz']) # 括号内相加的结果为：[src三维点数组, tgt三维点数组]
+        kpconv_meta = self.preprocessor(batch['src_xyz'] + batch['tgt_xyz']) 
         batch['kpconv_meta'] = kpconv_meta
         slens = [s.tolist() for s in kpconv_meta['stack_lengths']]
         slens_c = slens[-1]
         src_slens_c, tgt_slens_c = slens_c[:B], slens_c[B:]
         feats0 = torch.ones_like(kpconv_meta['points'][0][:, 0:1])
-
-        # print('@@@@@@@@@@@@@@@@@@@@@@@@@@  source data of KPConv  @@@@@@@@@@@@@@@@@@@@@@@@@@')
-        # print(kpconv_meta['points'][0].shape)
 
         if _TIMEIT:
             t_end_pp_cuda.record()
@@ -192,12 +136,7 @@ class RegTR(GenericRegModel):
         ####################
         # REGTR Encoder
         ####################
-        # KPConv encoder (downsampling) to obtain unconditioned features
-        # 使用骨干网络卷积特征描述向量feats0。kpconv_meta是点的三维坐标？
-        # print('kpconv_meta data is {}'.format(kpconv_meta.keys()))
         feats_un, skip_x = self.kpf_encoder(feats0, kpconv_meta)
-        # print('dddddddddddddddddddddd!!!!!!!!!!!!! after kpconv features un shape !!!!!!!!!!!!!!!!!')
-        # print(feats_un.shape)
 
         if _TIMEIT:
             t_end_enc_cuda.record()
@@ -208,27 +147,20 @@ class RegTR(GenericRegModel):
             t_start_att_cuda.record()
 
         both_feats_un = self.feat_proj(feats_un)
-        src_feats_un, tgt_feats_un = split_src_tgt(both_feats_un, slens_c) # 训练的时候batch等于2，所以src_feats_un包含了两个训练样本
+        src_feats_un, tgt_feats_un = split_src_tgt(both_feats_un, slens_c) 
 
         # Position embedding for downsampled points
-        src_xyz_c, tgt_xyz_c = split_src_tgt(kpconv_meta['points'][-1], slens_c) # 这里的src是特征点的三维坐标
-        # print('###################src_xyz_c shape is {}, src_feats_un shape is {}'.format(src_xyz_c[-1].shape, src_feats_un[-1].shape))
+        src_xyz_c, tgt_xyz_c = split_src_tgt(kpconv_meta['points'][-1], slens_c) 
 
         if self.Geoembeding:
-            # print('!@@@@@@@@@@@@ ', kpconv_meta['points'][-1])
-            # print("!@@@@@@@@@@ ", src_xyz_c[0].unsqueeze(0))
             src_pe, tgt_pe = [], []
             for xyzi in range(len(src_xyz_c)):
                 src_pe.append(self.pos_embed(src_xyz_c[xyzi].unsqueeze(0)))
                 tgt_pe.append(self.pos_embed(tgt_xyz_c[xyzi].unsqueeze(0)))
             src_pe = tuple(src_pe)
             tgt_pe = tuple(tgt_pe)
-            # print("############ ",type(src_pe), "   ", src_pe[0].shape, "  ", src_pe[1].shape)
         else:
-            # 根据Source和Target三维点坐标，进行位置编码
             src_pe, tgt_pe = split_src_tgt(self.pos_embed(kpconv_meta['points'][-1]), slens_c)
-            # print("############ ",type(src_pe), "   ", src_pe[0].shape, "  ", src_pe[1].shape)
-            # 正常的src-pe的格式为：（tensor1, tensor2）元组的形式,tensorsize==（N，512），src-pe的格式为：
         src_pe_padded, _, _ = pad_sequence(src_pe)
         tgt_pe_padded, _, _ = pad_sequence(tgt_pe)
 
@@ -238,20 +170,13 @@ class RegTR(GenericRegModel):
                                                                  require_padding_mask=True)
         tgt_feats_padded, tgt_key_padding_mask, _ = pad_sequence(tgt_feats_un,
                                                                  require_padding_mask=True)
-        # print('!!!!!!!!!!!!!!!!!!!!!!!transformer encoder src_feats_cond input!!!!!!!!!!')
-        # print(src_feats_padded[-1])
-        # print( src_xyz_c[-1].shape, src_xyz_c[0].shape)
         src_feats_cond, tgt_feats_cond = self.transformer_encoder(
             src_feats_padded, tgt_feats_padded,
             src_key_padding_mask=src_key_padding_mask,
             tgt_key_padding_mask=tgt_key_padding_mask,
             src_pos=src_pe_padded if self.cfg.transformer_encoder_has_pos_emb else None,
             tgt_pos=tgt_pe_padded if self.cfg.transformer_encoder_has_pos_emb else None,
-            # src_xyz=src_xyz_c,
-            # tgt_xyz=tgt_xyz_c,
         )
-        # print(src_feats_cond.shape)
-        # print('!!!!!!!!!!!!!!!!!!!!!!!After transformer encoder srcfeats_cond output!!!!!!!!!!!')
 
         src_corr_list, tgt_corr_list, src_overlap_list, tgt_overlap_list = \
             self.correspondence_decoder(src_feats_cond, tgt_feats_cond, src_xyz_c, tgt_xyz_c)
@@ -399,9 +324,6 @@ class CorrespondenceDecoder(nn.Module):
         self.k_proj = nn.Linear(d_embed, d_embed)
         self.conf_logits_decoder = nn.Linear(d_embed, 1)
         self.num_neighbors = num_neighbors
-
-        # nn.init.xavier_uniform_(self.q_proj.weight)
-        # nn.init.xavier_uniform_(self.k_proj.weight)
 
     def simple_attention(self, query, key, value, key_padding_mask=None):
         """Simplified single-head attention that does not project the value:

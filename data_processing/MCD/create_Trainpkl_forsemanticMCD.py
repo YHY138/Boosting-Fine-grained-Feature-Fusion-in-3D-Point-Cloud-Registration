@@ -127,11 +127,11 @@ print(kitti_pkl['rot'].shape)# <class 'numpy.ndarray'> (n, 3,3)
 print(type(kitti_pkl['rot']))
 print(kitti_pkl['trans'].shape)# <class 'numpy.ndarray'> （n, 3, 1)
 
-file = open(os.path.join(exported_dir,'tuhh_night08_Labelled_5kpts_train.pkl'), 'wb')
+file = open(os.path.join(exported_dir,'XXX_train.pkl'), 'wb')
 pickle.dump(kitti_pkl, file)
 file.close()
 
-val_file = open(os.path.join(exported_dir,'tuhh_night08_Labelled_5kpts_val.pkl'), 'wb')
+val_file = open(os.path.join(exported_dir,'XXX_val.pkl'), 'wb')
 pickle.dump(val_kittipkl, val_file)
 val_file.close()
 

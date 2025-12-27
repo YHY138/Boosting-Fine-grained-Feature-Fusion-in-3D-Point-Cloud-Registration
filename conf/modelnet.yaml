@@ -3,7 +3,7 @@ general:
 
 dataset:
     dataset: modelnet
-    root: ../data/data/modelnet40_ply_hdf5_2048
+    root: '/path/to/modelnet40_ply_hdf5_2048'
     train_categoryfile: datasets/modelnet/modelnet40_half1.txt
     val_categoryfile: datasets/modelnet/modelnet40_half1.txt
     test_categoryfile: datasets/modelnet/modelnet40_half2.txt

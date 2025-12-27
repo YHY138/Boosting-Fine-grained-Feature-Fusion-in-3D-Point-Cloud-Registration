@@ -16,13 +16,13 @@ from ceva import Ceva
 from pypcd import pypcd
 
 # Link to rosbag
-rosbag_file = '/data/MCD_dataset/4-ntu_night_08/ntu_night_08_os1_128.bag'
+rosbag_file = '/path/to/your/dataset/XXX.bag'
 
 # Folder to export the pointclouds to
-exported_dir = '/data/MCD_dataset/processed_data/ntu_night_08_exported_pcds_forTrain'
+exported_dir = '/path/to/your/MCD/dataset/processed_data/XXX_exported_pcds_forTrain'
 
 # Ground truth spline log
-spline_log = '/data/MCD_dataset/4-ntu_night_08/spline.csv'
+spline_log = '/path/to/your/dataset/spline.csv'
 # Relative pose between Lidar and Body coordinate system
 T_B_L = np.array([[0.9999346552051229, 0.003477624535771754, -0.010889970036688295, -0.060649229060416594],
                   [0.003587143302461965, -0.9999430279821171, 0.010053516443599904, -0.012837544242408117],
@@ -117,8 +117,8 @@ for topic, msg, t in bag.read_messages():
         ta = th + tr / 1.0e9
 
         # Transform pointcloud from lidar to body frame
-        pc_xyz_inB = np.dot(R_B_L, pc_xyz_inL.T).T + t_B_L # 这里算的是Lidar看到的三维点变换到Body坐标系上的坐标        # Put the intensity back
-        pc_xyz_inB = np.concatenate([pc_xyz_inB, intensity], axis=1) # 这里算的是PCD在世界坐标系上的坐标值。
+        pc_xyz_inB = np.dot(R_B_L, pc_xyz_inL.T).T + t_B_L # Put the intensity back
+        pc_xyz_inB = np.concatenate([pc_xyz_inB, intensity], axis=1)
 
         # Save the original distorted pointcloud
         pc_inW_distorted_filename = exported_dir + '/cloud_inBody/cloud' \

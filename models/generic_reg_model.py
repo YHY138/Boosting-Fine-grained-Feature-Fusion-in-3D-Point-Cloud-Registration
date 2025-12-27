@@ -63,11 +63,8 @@ class GenericRegModel(GenericModel, ABC):
         self.logger.info(f'Using optimizer {self.optimizer} with scheduler {self.scheduler}')
 
     def training_step(self, batch, batch_idx):
-        # print('@@@@@ self.forward')
         pred = self.forward(batch)
-        # print("@@@@@@ self.compute_loss")
         losses = self.compute_loss(pred, batch)
-        # print("@@@@@@ stores losses for summary writing")
         # Stores the losses for summary writing
         for k in losses:
             self.loss_stats_meter[k].update(losses[k])
@@ -86,8 +83,6 @@ class GenericRegModel(GenericModel, ABC):
         pred = self.forward(batch)
         losses = self.compute_loss(pred, batch)
         metrics = self._compute_metrics(pred, batch)
-
-        # visualize_registration(batch, pred, metrics=metrics, iter_idx=5, b=2)
 
         val_outputs = (losses, metrics)
 
@@ -263,7 +258,6 @@ class GenericRegModel(GenericModel, ABC):
     @property
     def _log_path(self):
         return self.get_trainer().log_path
-
 
     """
     Dataset specific functions

@@ -153,16 +153,16 @@ class GeometricStructureEmbedding(nn.Module):
         """
         batch_size, num_point, _ = points.shape
 
-        dist_map = torch.sqrt(pairwise_distance(points, points))  # (B, N, N) # 计算points两两配对点之间的距离，用平方表示
+        dist_map = torch.sqrt(pairwise_distance(points, points))  # (B, N, N)
         d_indices = dist_map / self.sigma_d
 
         k = self.angle_k
-        knn_indices = dist_map.topk(k=k + 1, dim=2, largest=False)[1][:, :, 1:]  # (B, N, k) 从张量数组中，以行为单位选取最小的k+1个点，相当于完成KNN聚类。但这里是获得N中各点KNN邻域内点在N中的下标索引
+        knn_indices = dist_map.topk(k=k + 1, dim=2, largest=False)[1][:, :, 1:]  # (B, N, k) 
         knn_id = knn_indices # (B, N, k)
         knn_indices = knn_indices.unsqueeze(3).expand(batch_size, num_point, k, 3)  # (B, N, k, 3)
         expanded_points = points.unsqueeze(1).expand(batch_size, num_point, num_point, 3)  # (B, N, N, 3)
-        knn_points = torch.gather(expanded_points, dim=2, index=knn_indices)  # (B, N, k, 3) # 这里
-        ref_vectors = knn_points - points.unsqueeze(2)  # (B, N, k, 3) # 这里获得每个点的KNN邻域内各点的3D坐标
+        knn_points = torch.gather(expanded_points, dim=2, index=knn_indices)  # (B, N, k, 3) 
+        ref_vectors = knn_points - points.unsqueeze(2)  # (B, N, k, 3)
         anc_vectors = points.unsqueeze(1) - points.unsqueeze(2)  # (B, N, N, 3)
         ref_vectors = ref_vectors.unsqueeze(2).expand(batch_size, num_point, num_point, k, 3)  # (B, N, N, k, 3)
         anc_vectors = anc_vectors.unsqueeze(3).expand(batch_size, num_point, num_point, k, 3)  # (B, N, N, k, 3)
@@ -179,23 +179,18 @@ class GeometricStructureEmbedding(nn.Module):
 
         d_embeddings = self.embedding(d_indices)
         d_embeddings = self.proj_d(d_embeddings)
-        # print("######### ", d_embeddings.shape) # (B,N,N,D)表示的应该是每个点与N个点算的distance编码
 
         a_embeddings = self.embedding(a_indices)
         a_embeddings = self.proj_a(a_embeddings)
-        # print("############## ", a_embeddings.shape) # (B,N,N,3,D)因为论文中角度编码是通过三联体取最大值获得
         if self.reduction_a == 'max':
             a_embeddings = a_embeddings.max(dim=3)[0]
-            # print("!!!!!!!!!!!!!! ", a_embeddings.shape)# (B,N,N,D)取完最大值以后
         else:
             a_embeddings = a_embeddings.mean(dim=3)
 
-        embeddings = d_embeddings + a_embeddings # （B,N,N,D)融合以后的编码。
-        # 在这里取一次KNN紧邻，然后只保留KNN领域内编码最大的那个作为位置编码看看是否会效果变好
+        embeddings = d_embeddings + a_embeddings # （B,N,N,D)
         knn_index = knn_index.unsqueeze(3).expand(batch_size, num_point, -1, embeddings.shape[-1])  # (B, N, k, 3)
         knn_embeddings = torch.gather(embeddings, dim=2, index=knn_index)
         knn_embeddings = knn_embeddings.max(dim=2)[0]
-        # print("###############", knn_embeddings.shape) # (B,N,D)
 
         # return embeddings
         return knn_embeddings[0]

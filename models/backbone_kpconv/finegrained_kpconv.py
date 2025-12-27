@@ -538,7 +538,6 @@ class PreprocessorGPU(torch.nn.Module):
             'upsamples': input_upsamples,
             'stack_lengths': input_batch_lens,
         }
-        # print("########### dl" , dl) # 最后好像是0.2
 
         return data
 

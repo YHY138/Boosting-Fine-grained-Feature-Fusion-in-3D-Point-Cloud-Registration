@@ -1,6 +1,4 @@
-'''
-计算MCD两个pcd之间的重叠率
-'''
+
 """
 We use this script to calculate the overlap ratios for all the train/test fragment pairs
 """
@@ -24,7 +22,7 @@ def get_overlap_ratio(source, target, threshold=0.0375):
 
     match_count = 0
     for i, point in enumerate(source.points):
-        [count, _, _] = pcd_tree.search_radius_vector_3d(point, threshold) # threshold是搜索重叠率的搜索半径
+        [count, _, _] = pcd_tree.search_radius_vector_3d(point, threshold)
         if (count != 0):
             match_count += 1
 

@@ -1,15 +1,11 @@
+'''
+This code will integrate point clouds, corresponding poses, and other relevant information into the metadata required for training.
+'''
 import os, sys, glob, time
 import numpy as np
-import scipy
-from scipy.spatial.transform import Rotation
 
-import rospy, rosbag
-
-from ceva import Ceva
 # pcd interface
-from pypcd import pypcd
 import open3d as o3d
-from tqdm import tqdm
 import pickle
 
 import torch
@@ -17,9 +13,9 @@ import torch
 from compute_MCDoverlap import cal_overlap_twoPCD
 
 # Folder to export the pointclouds to
-exported_dir = 'your_exported_dir'
-pth_files = sorted(glob.glob(exported_dir + '/cloud_inBody_mergeFrame_withGapSample/*.pth'))
-pose_files = sorted(glob.glob(exported_dir + '/cloud_inBody_mergeFrame_withGapSample/*.txt'))
+exported_dir = '/path/to/your/MCD/dataset'
+pth_files = sorted(glob.glob(exported_dir + '/cloud_inBody_mergeFrameSample/*.pth'))
+pose_files = sorted(glob.glob(exported_dir + '/cloud_inBody_mergeFrameSample/*.txt'))
 src, tgt, rot, trans, overlap = [], [], [], [], []
 pcd_number = len(pth_files)
 total_num = 0
@@ -82,11 +78,11 @@ val_mcdpkl['tgt'] = np.array(tgt[int(total_num*train_ratio):])
 val_mcdpkl['overlap'] = np.array(overlap[int(total_num*train_ratio):])
 val_mcdpkl['rot'] = np.array(rot[int(total_num*train_ratio):])
 val_mcdpkl['trans'] = np.array(trans[int(total_num*train_ratio):])
-file = open('./ntu_night_08_exported_pcds_forTrain/ntu_night_08_mergeMiniGap_train.pkl', 'wb')
+file = open('/path/to/your/dataset/XXX_train.pkl', 'wb')
 pickle.dump(mcd_pkl, file)
 file.close()
 
-val_file = open('./ntu_night_08_exported_pcds_forTrain/ntu_night_08_mergeMiniGap_val.pkl', 'wb')
+val_file = open('/path/to/your/dataset/XXX_val.pkl', 'wb')
 pickle.dump(val_mcdpkl, val_file)
 val_file.close()
 

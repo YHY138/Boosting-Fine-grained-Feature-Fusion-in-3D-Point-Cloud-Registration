@@ -5,8 +5,6 @@ from matplotlib.pyplot import cm as colormap
 import cvhelpers.visualization as cvv
 import cvhelpers.colors as colors
 from cvhelpers.torch_helpers import to_numpy
-import sys
-sys.path.append('/home/ubuntu/anaconda3/envs/regtr/train_regtr/RegTR-main/src/utils')
 from se3_torch import se3_transform
 
 
