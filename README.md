@@ -17,7 +17,7 @@ Source code for the paper: Boosting Fine-grained Feature Fusion in 3D Point Clou
 ├── README.md # Project documentation  
 ├── requirements.txt # Dependency list  
 ├── rr_test.sh # Validation script for Registration Recall
-├── save_colorP3D.py # PCA transforms the features into RGB color  
+├── save_colorP3D.py # PCA transforms the features into RGB color    
 ├── save_result_demo.py # Saving registration results  
 ├── test.py #  Registration Recall calculation  
 ├── train.py # Training script   
