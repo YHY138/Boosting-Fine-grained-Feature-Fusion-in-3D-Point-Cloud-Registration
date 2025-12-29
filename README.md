@@ -1,6 +1,16 @@
 # Boosting Fine-grained Feature Fusion in 3D Point Cloud Registration
 Source code for the paper: Boosting Fine-grained Feature Fusion in 3D Point Cloud Registration. Manuscript ID: IEEE LATAM Submission ID: 10157 
 
+### Authors:
+- Huaiyuan Yu
+- Haijiang Zhu
+- Jian Cheng
+- Ning An
+
+### Affiliation:
+- Beijing University of Chemical Technology
+- Chinese Institute of Coal Science
+
 ---
 
 ##  Project Structure
