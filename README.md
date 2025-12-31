@@ -8,8 +8,8 @@ Source code for the paper: Boosting Fine-grained Feature Fusion in 3D Point Clou
 - Ning An
 
 ### Affiliation:
-- Beijing University of Chemical Technology
-- Chinese Institute of Coal Science
+- Huaiyuan Yu and Haijiang Zhu are with the Beijing University of Chemical Technology
+- Jian Cheng and Ning An are with the Chinese Institute of Coal Science
 
 ---
 
